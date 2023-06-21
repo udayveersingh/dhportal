@@ -2,6 +2,9 @@
 
 use Illuminate\Support\Facades\Route;
 
+use Twilio\Rest\Client;
+
+
     /*
     |--------------------------------------------------------------------------
     | Web Routes
@@ -28,3 +31,27 @@ Route::get('/install','InstallerController@redirectToRequirement')->name('Larave
 Route::get('/install/environment','InstallerController@redirectToWizard')->name('LaravelInstaller::environment');
 Route::get('/booking/cancel/{id}', 'BookingController@cancel')->name('booking.cancel');
 
+Route::get('/sms', function () {
+           // Send Twillio Message on whats app
+
+           $sid    = getenv("TWILIO_AUTH_SID");
+
+           $token  = getenv("TWILIO_AUTH_TOKEN");
+   
+           $wa_from= getenv("TWILIO_WHATSAPP_FROM");
+   
+           $twilio = new Client($sid, $token);
+
+           
+           $msgBody = "You Booking Updated\nBooking id: 250\nService:NANA SHRI GUEST HOUSE";
+   
+           $message = $twilio->messages
+                     ->create("whatsapp:+919814274641", // to
+                              [
+                                  "body" => $msgBody,
+                                  "from" => "whatsapp:$wa_from",
+                              ]
+                     );
+   
+           print($message);
+});
