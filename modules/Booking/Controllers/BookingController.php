@@ -42,6 +42,7 @@ use Modules\Booking\Models\Enquiry;
 
 use App\Helpers\ReCaptchaEngine;
 
+use Twilio\Rest\Client;
 
 
 class BookingController extends \App\Http\Controllers\Controller
