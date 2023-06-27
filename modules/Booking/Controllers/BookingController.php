@@ -308,8 +308,6 @@ class BookingController extends \App\Http\Controllers\Controller
 
         $booking = $this->bookingInst;
 
-
-
         if ( !in_array($booking->status , ['draft','unpaid'])) {
 
             return $this->sendError('',[
@@ -426,8 +424,7 @@ class BookingController extends \App\Http\Controllers\Controller
 
         }
 
-
-
+       
         $rules = $service->filterCheckoutValidate($request, $rules);
 
         if (!empty($rules)) {
@@ -628,8 +625,29 @@ class BookingController extends \App\Http\Controllers\Controller
 
         $booking->save();
 
+        // Send what's app message after booking save.
 
+           $sid    = getenv("TWILIO_AUTH_SID");
 
+           $token  = getenv("TWILIO_AUTH_TOKEN");
+   
+           $wa_from= getenv("TWILIO_WHATSAPP_FROM");
+   
+           $twilio = new Client($sid, $token);
+           
+           $msgBody = ' You Booking Updated
+                        Booking id: '.$booking->id.'
+ Service:NANA SHRI GUEST HOUSE';
+   
+           $message = $twilio->messages
+                     ->create("whatsapp:+91".$booking->phone, // to
+                              [
+                                  "body" => $msgBody,
+                                  "from" => "whatsapp:$wa_from",
+                              ]
+                     );
+
+     
 //        event(new VendorLogPayment($booking));
 
 
