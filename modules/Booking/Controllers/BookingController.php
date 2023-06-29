@@ -288,7 +288,6 @@ class BookingController extends \App\Http\Controllers\Controller
 
 
     public function doCheckout(Request $request)
-
     {
 
         /**
@@ -326,8 +325,6 @@ class BookingController extends \App\Http\Controllers\Controller
             return $this->sendError(__("Service not found"));
 
         }
-
-
 
         $is_api = request()->segment(1) == 'api';
 
@@ -518,8 +515,6 @@ class BookingController extends \App\Http\Controllers\Controller
 
         $booking->pay_now = floatval((int)$booking->deposit == null ? $booking->total : (int)$booking->deposit);
 
-
-
         // If using credit
 
         if($booking->wallet_total_used > 0){
@@ -549,8 +544,6 @@ class BookingController extends \App\Http\Controllers\Controller
 
 
             }
-
-
 
             $booking->pay_now = max(0,$booking->pay_now - $wallet_total_used);
 
@@ -628,30 +621,86 @@ class BookingController extends \App\Http\Controllers\Controller
 
         // Send what's app message after booking save.
 
-           $sid    = getenv("TWILIO_AUTH_SID");
+        $sid    = getenv("TWILIO_AUTH_SID");
 
-           $token  = getenv("TWILIO_AUTH_TOKEN");
-   
-           $wa_from= getenv("TWILIO_WHATSAPP_FROM");
-   
-           $twilio = new Client($sid, $token);
-           
-           $msgBody = ' You Booking Updated
-                        Booking id: '.$booking->id.'
- Service:NANA SHRI GUEST HOUSE';
-   
-           $message = $twilio->messages
-                     ->create("whatsapp:+91".$booking->phone, // to
-                              [
-                                  "body" => $msgBody,
-                                  "from" => "whatsapp:$wa_from",
-                              ]
-                     );
+        $token  = getenv("TWILIO_AUTH_TOKEN");
 
-     
-//        event(new VendorLogPayment($booking));
+        $wa_from= getenv("TWILIO_WHATSAPP_FROM");
 
+        $twilio = new Client($sid, $token);
+        
+        $service = ucwords(str_replace('-',' ',$service->slug));
 
+        $checkout_date = date('Y-m-d', strtotime($booking->end_date . ' +1 day'));
+
+        // Twillio Whats app SMS to Customer
+
+        $msgBody = 'Your booking Confirmed
+        Booking id: '.$booking->id.'
+        Price: '.$booking->total.'
+        Service: '.$service.'
+        Start Date: '.$booking->start_date.'
+        End Date: '.$checkout_date.' 12:00 PM
+        Total Guest: '.$booking->total_guests;
+
+        if (!(str_contains($booking->phone,'+91')))
+        $booking->phone = '+91'.$booking->phone;
+
+        try {
+
+            $message = $twilio->messages
+                    ->create("whatsapp:".$booking->phone, // to
+                            [
+                                "body" => $msgBody,
+                                "from" => "whatsapp:$wa_from",
+                            ]
+                    );
+
+        } catch (Exception $exception) {
+
+            return $this->sendError($exception->getMessage());
+
+        }
+
+        
+
+        // Twillio Whats app SMS to Vendor
+
+        $vendor_id = $booking->vendor_id;
+
+        $vendor = User::find($vendor_id);
+
+        $vendor_phone = $vendor->phone;
+            
+        $vendorMsgBody = 'You Received a Booking 
+        Booking id: '.$booking->id.'
+        Price: '.$booking->total.'
+        Customer: '.$booking->first_name.' '.$booking->last_name.'
+        Phone: '.$booking->phone.'
+        Check In: '.$booking->start_date.'
+        Check Out: '.$checkout_date.' 12:00 PM
+        Total Guest: '.$booking->total_guests;
+
+        if (!(str_contains($vendor_phone,'+91')))
+        $vendor_phone = '+91'.$vendor_phone;
+
+        try {
+
+            $message = $twilio->messages
+            ->create("whatsapp:".$vendor_phone, // to
+                    [
+                        "body" => $vendorMsgBody,
+                        "from" => "whatsapp:$wa_from",
+                    ]
+            );
+
+        } catch (Exception $exception) {
+
+            return $this->sendError($exception->getMessage());
+
+        }
+
+        
 
         if(Auth::check()) {
 
