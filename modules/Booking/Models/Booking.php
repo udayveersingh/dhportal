@@ -451,7 +451,7 @@ class Booking extends BaseModel
         if (!empty($service)) {
             $list_booking->where("object_model", $service);
         }
-        $list_booking->where('status','!=','draft');
+        // $list_booking->where('status','!=','draft'); show all booking including draft one.
         $list_booking->whereIn('object_model', array_keys(get_bookable_services()));
         return $list_booking->paginate(10);
     }
