@@ -7,8 +7,7 @@
         @if($list_blog)
             @foreach($list_blog as $blog)
                 @php $translation_cat = $blog->category->translate()  @endphp
-                {{$translation_cat->name}}
-                @if($translation_cat->name=='blog')
+                @if($translation_cat->name=='Blog')
                 @php $translation = $blog->translate() @endphp
                 <li>
                     @if($image_url = get_file_url($blog->image_id, 'thumb'))
