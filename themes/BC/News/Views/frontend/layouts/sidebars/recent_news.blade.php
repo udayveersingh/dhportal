@@ -6,7 +6,8 @@
         @php $list_blog = $model_news->with(['category','translation'])->orderBy('id','desc')->paginate(5) @endphp
         @if($list_blog)
             @foreach($list_blog as $blog)
-                @if($blog->category->name=='blog')
+                @php $translation_cat = $blog->category->translate()  @endphp
+                @if($translation_cat->name=='blog')
                 @php $translation = $blog->translate() @endphp
                 <li>
                     @if($image_url = get_file_url($blog->image_id, 'thumb'))
