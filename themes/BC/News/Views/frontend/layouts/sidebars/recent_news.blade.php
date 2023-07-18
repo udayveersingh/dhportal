@@ -7,6 +7,7 @@
         @if($list_blog)
             @foreach($list_blog as $blog)
                 @php $translation_cat = $blog->category->translate()  @endphp
+                {{$translation_cat->name}}
                 @if($translation_cat->name=='blog')
                 @php $translation = $blog->translate() @endphp
                 <li>
