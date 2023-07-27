@@ -16,7 +16,10 @@ class OfflinePaymentGateway extends BaseGateway
         // Simple change status to processing
 
         if($booking->paid <= 0){
-            $booking->status = $booking::PROCESSING;
+            // code change by Varun on 27-07-2023 start 
+            // $booking->status = $booking::PROCESSING;
+            $booking->status = "confirmed";
+            // code change by Varun on 27-07-2023 start 
         }else{
             if($booking->paid < $booking->total){
                 $booking->status = $booking::PARTIAL_PAYMENT;

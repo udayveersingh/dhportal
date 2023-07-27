@@ -21,6 +21,9 @@
                                 $size_col = 8;
                             }
                         }
+                        if($title == "Popular Destinations"){
+                            $size_col = 3;
+                        }
                         ?>
                         <div class="col-lg-{{$size_col}} col-md-6">
                             @include('Location::frontend.blocks.list-locations.loop')
