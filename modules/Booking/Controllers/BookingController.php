@@ -784,8 +784,6 @@ class BookingController extends \App\Http\Controllers\Controller
 
         $this->savePassengers($booking,$request);
 
-
-
         if($res = $service->afterCheckout($request, $booking)){
 
             return $res;
@@ -973,6 +971,7 @@ class BookingController extends \App\Http\Controllers\Controller
     {
         $booking = Booking::where('id', $id)->first();
 
+        
         if (empty($booking)) {
 
             return $this->sendError(__('Booking not found'));
@@ -983,6 +982,68 @@ class BookingController extends \App\Http\Controllers\Controller
         event(new BookingUpdatedEvent($booking));
 
         $booking->save();
+
+        // Twillio Whats app SMS to Vendor
+        
+        $sid    = getenv("TWILIO_AUTH_SID");
+
+        $token  = getenv("TWILIO_AUTH_TOKEN");
+
+        $wa_from= getenv("TWILIO_WHATSAPP_FROM");
+
+        // user notifcation
+        $twilio = new Client($sid, $token);
+
+        $msgBody = 'User Canceled A Booking
+        Booking id: '.$booking->id.'
+        Customer: '.$booking->first_name.' '.$booking->last_name.'
+        Phone: '.$booking->phone;
+
+        if (!(str_contains($booking->phone,'+91')))
+        $booking->phone = '+91'.$booking->phone;
+
+        try {
+
+            $message = $twilio->messages
+                    ->create("whatsapp:".$booking->phone, // to
+                            [
+                                "body" => $msgBody,
+                                "from" => "whatsapp:$wa_from",
+                            ]
+                    );
+
+        } catch (Exception $exception) {
+
+            return $this->sendError($exception->getMessage());
+
+        }
+
+        // vendor whats app notification
+
+         $vendor_id = $booking->vendor_id;
+
+         $vendor = User::find($vendor_id);
+ 
+         $vendor_phone = $vendor->phone;
+
+         if (!(str_contains($vendor_phone,'+91')))
+         $vendor_phone = '+91'.$vendor_phone;
+ 
+         try {
+ 
+             $message = $twilio->messages
+             ->create("whatsapp:".$vendor_phone, // to
+                     [
+                         "body" => $msgBody,
+                         "from" => "whatsapp:$wa_from",
+                     ]
+             );
+ 
+         } catch (Exception $exception) {
+ 
+             return $this->sendError($exception->getMessage());
+ 
+         }
 
         return back()->with('success',__("You booking has been cancel successfully"));
 
