@@ -300,7 +300,6 @@ class Booking extends BaseModel
 
     public static function getRecentAllBookings($limit = 20,$vendor_id = false)
     {
-        $q = parent::where('status', '!=', 'draft');
         return $q->orderBy('id', 'desc')->limit($limit)->get();
     }
 
