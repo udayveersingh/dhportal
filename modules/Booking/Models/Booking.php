@@ -298,6 +298,13 @@ class Booking extends BaseModel
         return $q->orderBy('id', 'desc')->limit($limit)->get();
     }
 
+    public static function getRecentAllBookings($limit = 20,$vendor_id = false)
+    {
+        $q = parent::where('status', '!=', 'draft');
+        return $q->orderBy('id', 'desc')->limit($limit)->get();
+    }
+
+    
     public static function getTopCardsReport()
     {
 

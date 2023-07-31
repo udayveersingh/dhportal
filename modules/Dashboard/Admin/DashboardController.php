@@ -1,6 +1,7 @@
 <?php
 namespace Modules\Dashboard\Admin;
 
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Modules\AdminController;
 use Modules\Booking\Models\Booking;
@@ -9,9 +10,14 @@ class DashboardController extends AdminController
 {
     public function index()
     {
+        $user = Auth::user();
+        if($user->role_id==1)
+        $recentBookings = Booking::getRecentAllBookings();
+        else
+            $recentBookings = Booking::getRecentBookings();
         $f = strtotime('monday this week');
         $data = [
-            'recent_bookings'    => Booking::getRecentBookings(),
+            'recent_bookings'    => $recentBookings,
             'top_cards'          => Booking::getTopCardsReport(),
             'earning_chart_data' => Booking::getDashboardChartData($f, time())
         ];
